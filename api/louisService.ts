@@ -106,8 +106,8 @@ export function ensureFullImageUrl(imagePath: string): string {
     ? IMAGE_BASE_URL.slice(0, -1)
     : IMAGE_BASE_URL;
 
-  // Remove barras iniciais e garanta o prefixo "static/images/"
-  const cleanPath = imagePath.replace(/^\/+/, '');
+  // Remove barras iniciais e garanta o prefixo "static/images/", normalizando para lowercase
+  const cleanPath = imagePath.replace(/^\/+/, '').toLowerCase();
   const pathWithPrefix = cleanPath.startsWith('static/images/')
     ? cleanPath
     : `static/images/${cleanPath}`;
