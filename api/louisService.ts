@@ -75,18 +75,20 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
 
 // Adiciona o domínio base a URLs relativas de imagens
 export const ensureFullImageUrl = (imageUrl: string): string => {
-  // Se já é uma URL completa (começa com http:// ou https://), retorna como está
+  if (!imageUrl) return '';
+
+  // Se já é uma URL completa (http ou https), retorna como está
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
   }
-  
-  // Se é um caminho relativo (começa com /), adiciona o domínio base
-  if (imageUrl.startsWith('/')) {
-    return `http://louis.tpfbrain.com:8000${imageUrl}`;
+
+  // Se começa com /static/images/, mantém como está (já está correto para Nginx)
+  if (imageUrl.startsWith('/static/images/')) {
+    return imageUrl;
   }
-  
-  // Se não tem barra inicial, adiciona-a junto com o domínio base
-  return `http://louis.tpfbrain.com:8000/${imageUrl}`;
+
+  // Para qualquer caminho relativo (ex: apenas nome), converte para caminho local
+  return `/static/images/${imageUrl.replace(/^\/?/, '')}`;
 };
 
 // URL padrão para casos de fallback
