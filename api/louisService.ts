@@ -8,8 +8,9 @@ import { Platform } from 'react-native';
 // Base URL raiz para a API (SEM barra final)
 const BASE_URL =
   typeof window !== 'undefined'
-    ? '/api/v1' // Web: mesmo host/porta/protocolo do frontend
-    : 'http://louis.tpfbrain.com:8000/api/v1'; // Native / dev
+    ? 'https://louis.tpfbrain.com/api/v1'
+    : 'http://louis.tpfbrain.com:8000/api/v1';
+
 
 // Native/dev: usar host da API em HTTP
 const IMAGE_BASE_URL =
