@@ -13,10 +13,10 @@ const BASE_URL =
     // React Native / dev local: ainda aponta para porta 8000 em HTTP
     : 'http://louis.tpfbrain.com:8000/api/v1';
 
-// URL base para imagens - usa o mesmo protocolo/host que a API mas sem o caminho da API
+// URL base para imagens - usa o domínio correto conforme requisição
 const IMAGE_BASE_URL = typeof window !== 'undefined'
   ? window.location.origin // URL completa para web (mesma origem)
-  : 'http://louis.tpfbrain.com:8000'; // URL completa para native
+  : 'https://app-louis.tpfbrain.com'; // URL completa para aplicação em produção
 
 // Base URL da API
 // const BASE_URL = `${BASE_DOMAIN}${BASE_PATH}`;
