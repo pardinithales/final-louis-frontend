@@ -12,11 +12,11 @@ const BASE_URL =
     : 'http://louis.tpfbrain.com:8000/api/v1'; // Native / dev
 
 // URL base para imagens
-// Web: caminhos relativos (o servidor do frontend deve servir as imagens)
-// Native: mesmo host da API em http.
+// Web: usar domínio seguro HTTPS para evitar mixed‑content
+// Native/dev: usar host da API em HTTP
 const IMAGE_BASE_URL =
   typeof window !== 'undefined'
-    ? '' // Deixamos relativo – começa com /static/images/
+    ? 'https://louis.tpfbrain.com' // Domain com HTTPS onde as imagens estão disponíveis
     : 'http://louis.tpfbrain.com:8000';
 
 // LOG apenas em desenvolvimento
@@ -94,44 +94,18 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
   }
 };
 
-// Constrói URLs absolutas a partir de caminhos de imagem relativos
+// Constrói URL absoluta garantindo domínio
 export const ensureFullImageUrl = (imageUrl: string): string => {
-  console.log('[ensureFullImageUrl] Entrada:', imageUrl);
-  
-  if (!imageUrl) {
-    console.log('[ensureFullImageUrl] URL vazia, retornando string vazia');
-    return '';
-  }
+  if (!imageUrl) return '';
 
-  // Se já é uma URL completa (http ou https), retorna como está
+  // Se já é absoluta, retorna
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    console.log('[ensureFullImageUrl] URL já completa, mantendo:', imageUrl);
     return imageUrl;
   }
-  
-  // Formata a base da URL, removendo barra final se houver
-  const base = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
-  
-  // Remove barras iniciais extras para evitar URLs mal formadas
-  const cleanPath = imageUrl.replace(/^\/+/, '');
-  
-  // Se já começa com /static/images/ ou static/images/
-  if (imageUrl.startsWith('/static/images/')) {
-    // Remove a barra inicial para evitar duplicação
-    const fullUrl = `${base}${imageUrl}`;
-    console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
-    return fullUrl;
-  } else if (cleanPath.startsWith('static/images/')) {
-    // Já tem static/images/ mas sem barra inicial
-    const fullUrl = `${base}/${cleanPath}`;
-    console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
-    return fullUrl;
-  }
 
-  // Para qualquer outro caminho relativo, adiciona /static/images/
-  const fullUrl = `${base}/static/images/${cleanPath}`;
-  console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
-  return fullUrl;
+  const base = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+  const cleanPath = imageUrl.replace(/^\/+/, '');
+  return `${base}/${cleanPath.startsWith('static/images/') ? cleanPath : 'static/images/' + cleanPath}`;
 };
 
 // URL padrão para casos de fallback
