@@ -5,11 +5,11 @@ import { Platform } from 'react-native';
 const BASE_DOMAIN = 'louis.tpfbrain.com';
 const BASE_PATH = '/api/v1';
 
-const BASE_URL = Platform.OS === 'web'
-  // Usa o mesmo protocolo da página (http: ou https:) e **SEM** porta, pois 8000 não está exposto em HTTPS
-  ? `${window.location.protocol}//${BASE_DOMAIN}${BASE_PATH}`
-  // Em ambiente nativo ou desenvolvimento ainda podemos apontar para a porta 8000 via HTTP
-  : `http://${BASE_DOMAIN}:8000${BASE_PATH}`;
+const BASE_URL =
+  typeof window !== 'undefined'
+    ? `${window.location.origin}/api/v1`
+    : 'http://louis.tpfbrain.com:8000/api/v1';
+
 
 export type SyndromeType = {
   syndrome: string;
