@@ -1,21 +1,31 @@
 import { Platform } from 'react-native';
 
-// Base URL for the API - corrigida conforme documentação e status de redirecionamento
-const BASE_DOMAIN = 'louis.tpfbrain.com';
-const BASE_PATH = '/api/v1';
+// Configuração dinâmica das URLs base.
+// Para web (typeof window !== 'undefined'), usamos caminhos relativos
+// para garantir mesma origem e evitar problemas de mixed‑content.
+// Para React Native / desenvolvimento local, usamos host + porta explícitos.
 
-// Base URL da API - usando sempre a URL correta conforme a documentação
-const BASE_URL = 'http://louis.tpfbrain.com:8000/api/v1/';
+// Base URL raiz para a API (SEM barra final)
+const BASE_URL =
+  typeof window !== 'undefined'
+    ? '/api/v1' // Web: mesmo host/porta/protocolo do frontend
+    : 'http://louis.tpfbrain.com:8000/api/v1'; // Native / dev
 
-// URL base para imagens - usando mesmo domínio da API
-const IMAGE_BASE_URL = 'http://louis.tpfbrain.com:8000';
+// URL base para imagens
+// Web: caminhos relativos (o servidor do frontend deve servir as imagens)
+// Native: mesmo host da API em http.
+const IMAGE_BASE_URL =
+  typeof window !== 'undefined'
+    ? '' // Deixamos relativo – começa com /static/images/
+    : 'http://louis.tpfbrain.com:8000';
 
-// Log de configuração para depuração
-console.log('[louisService] Usando BASE_URL:', BASE_URL);
-console.log('[louisService] Usando IMAGE_BASE_URL:', IMAGE_BASE_URL);
+// LOG apenas em desenvolvimento
+if (__DEV__) {
+  console.log('[louisService] BASE_URL:', BASE_URL);
+  console.log('[louisService] IMAGE_BASE_URL:', IMAGE_BASE_URL);
+}
 
-// Base URL da API
-// const BASE_URL = `${BASE_DOMAIN}${BASE_PATH}`;
+// Tipos de dados
 
 export type SyndromeType = {
   syndrome: string;
@@ -148,7 +158,7 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     console.time('API Call: /query'); // Medir tempo do fetch /query
-    const response = await fetch(`${BASE_URL}/query`, {
+    const response = await fetch(`${BASE_URL}/query/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
