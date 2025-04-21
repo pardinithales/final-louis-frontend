@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 
 // Base URL for the API - use environment variable if available
-const BASE_URL = Platform.select({
-  web: 'http://louis.tpfbrain.com:8000/api/v1', // Conexão direta para web
-  default: 'http://louis.tpfbrain.com:8000/api/v1' // Manter conexão direta para native
-});
+// Use protocolo relativo (//) para respeitar HTTP ou HTTPS da página atual e evitar Mixed Content
+const BASE_URL = Platform.OS === 'web'
+  ? `${window.location.protocol}//louis.tpfbrain.com:8000/api/v1`
+  : 'http://louis.tpfbrain.com:8000/api/v1';
 
 export type SyndromeType = {
   syndrome: string;
