@@ -1,22 +1,18 @@
 import { Platform } from 'react-native';
 
-// Base URL for the API - use environment variable if available
-// Seleciona a URL base considerando HTTPS em produção (sem porta 8000) e HTTP com porta em desenvolvimento/native
+// Base URL for the API - corrigida conforme documentação e status de redirecionamento
 const BASE_DOMAIN = 'louis.tpfbrain.com';
 const BASE_PATH = '/api/v1';
 
-// Base URL da API
-const BASE_URL =
-  typeof window !== 'undefined'
-    // WEB: usa exatamente o mesmo host + protocolo do frontend
-    ? `${window.location.origin}/api/v1`
-    // React Native / dev local: ainda aponta para porta 8000 em HTTP
-    : 'http://louis.tpfbrain.com:8000/api/v1';
+// Base URL da API - usando sempre a URL correta conforme a documentação
+const BASE_URL = 'http://louis.tpfbrain.com:8000/api/v1/';
 
-// URL base para imagens - usa o domínio correto conforme requisição
-const IMAGE_BASE_URL = typeof window !== 'undefined'
-  ? window.location.origin // URL completa para web (mesma origem)
-  : 'https://app-louis.tpfbrain.com'; // URL completa para aplicação em produção
+// URL base para imagens - usando mesmo domínio da API
+const IMAGE_BASE_URL = 'http://louis.tpfbrain.com:8000';
+
+// Log de configuração para depuração
+console.log('[louisService] Usando BASE_URL:', BASE_URL);
+console.log('[louisService] Usando IMAGE_BASE_URL:', IMAGE_BASE_URL);
 
 // Base URL da API
 // const BASE_URL = `${BASE_DOMAIN}${BASE_PATH}`;
