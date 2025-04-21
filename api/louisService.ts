@@ -11,8 +11,6 @@ const BASE_URL =
     ? '/api/v1' // Web: mesmo host/porta/protocolo do frontend
     : 'http://louis.tpfbrain.com:8000/api/v1'; // Native / dev
 
-// URL base para imagens
-// Web: usar domínio seguro HTTPS para evitar mixed‑content
 // Native/dev: usar host da API em HTTP
 const IMAGE_BASE_URL =
   typeof window !== 'undefined'
@@ -95,18 +93,25 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
 };
 
 // Constrói URL absoluta garantindo domínio
-export const ensureFullImageUrl = (imageUrl: string): string => {
-  if (!imageUrl) return '';
+export function ensureFullImageUrl(imagePath: string): string {
+  console.log('[louisService] IMAGE_BASE_URL:', IMAGE_BASE_URL);
 
-  // Se já é absoluta, retorna
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-    return imageUrl;
+  if (!imagePath) return '';
+
+  if (imagePath.startsWith('http')) {
+    return imagePath;
   }
 
-  const base = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
-  const cleanPath = imageUrl.replace(/^\/+/, '');
-  return `${base}/${cleanPath.startsWith('static/images/') ? cleanPath : 'static/images/' + cleanPath}`;
-};
+  const base = IMAGE_BASE_URL.endsWith('/')
+    ? IMAGE_BASE_URL.slice(0, -1)
+    : IMAGE_BASE_URL;
+
+  const path = imagePath.startsWith('/')
+    ? imagePath
+    : `/${imagePath}`;
+
+  return `${base}${path}`;
+}
 
 // URL padrão para casos de fallback
 const getDefaultImageUrl = (): string => {
