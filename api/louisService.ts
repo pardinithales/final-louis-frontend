@@ -5,10 +5,14 @@ import { Platform } from 'react-native';
 const BASE_DOMAIN = 'louis.tpfbrain.com';
 const BASE_PATH = '/api/v1';
 
+// Base URL da API
 const BASE_URL =
   typeof window !== 'undefined'
+    // WEB: usa exatamente o mesmo host + protocolo do frontend
     ? `${window.location.origin}/api/v1`
+    // React Native / dev local: ainda aponta para porta 8000 em HTTP
     : 'http://louis.tpfbrain.com:8000/api/v1';
+
 
 
 export type SyndromeType = {
