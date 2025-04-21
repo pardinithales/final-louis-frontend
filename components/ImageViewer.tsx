@@ -24,7 +24,6 @@ const imageCache = new Map<string, string>();
 
 // Define o componente funcional
 function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
-  console.log('[ImageViewer] Renderizando com imageUri:', imageUri);
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -58,7 +57,6 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
     // Verifica se a URI processada (memoizedUri) é diferente da URI atualmente no estado (cachedUri)
     // e se memoizedUri não está vazia.
     if (memoizedUri && memoizedUri !== cachedUri) {
-      console.log('[ImageViewer] Nova memoizedUri, atualizando cachedUri:', memoizedUri);
       setLoading(true); // Reinicia o loading para a nova imagem
       setError(false);
       setCachedUri(memoizedUri); // Atualiza o estado que vai para a <Image>
@@ -80,7 +78,6 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
   };
 
   const handleLoadStart = () => {
-    console.log('[ImageViewer] Load Start:', cachedUri || memoizedUri);
     imageLoadTimer.current = Date.now(); // Guarda o tempo de início
     setLoading(true);
     setError(false);
@@ -91,10 +88,7 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
     setLoading(false);
     if (imageLoadTimer.current) {
       const loadTime = Date.now() - imageLoadTimer.current;
-      console.log(`[ImageViewer] Load Success: ${loadTime}ms`, cachedUri || memoizedUri); // Loga o tempo
       imageLoadTimer.current = null; // Limpa o timer
-    } else {
-       console.log(`[ImageViewer] Load Success (sem timer):`, cachedUri || memoizedUri);
     }
     // Registra que a imagem foi carregada com sucesso
     if (imageUri) {
@@ -104,22 +98,18 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
 
   const handleLoadError = (errorEvent: any) => { // Adiciona parâmetro de erro
      const nativeEvent = errorEvent?.nativeEvent || {}; // Acessa nativeEvent se existir
-     console.error('[ImageViewer] Load Error:', nativeEvent.error || 'Erro desconhecido', cachedUri || memoizedUri);
      if (imageLoadTimer.current) {
        const loadTime = Date.now() - imageLoadTimer.current;
-       console.log(`[ImageViewer] Tempo até erro: ${loadTime}ms`); // Loga o tempo até o erro
        imageLoadTimer.current = null; // Limpa o timer
      }
     // Tenta novamente algumas vezes antes de desistir (máximo 3 tentativas)
     if (loadAttempts.current < 3) {
       loadAttempts.current += 1;
-      console.log(`Tentativa ${loadAttempts.current} de carregar a imagem: ${imageUri}`);
       
       // Força uma nova tentativa com um novo timestamp (APENAS no erro)
       if (Platform.OS === 'web' && memoizedUri) { // Usa memoizedUri como base
         // Gera uma URI única para tentar furar o cache APENAS na tentativa de erro
         const retryUri = `${memoizedUri}${memoizedUri.includes('?') ? '&' : '?'}retry=${Date.now()}`;
-        console.log('[ImageViewer] Tentando novamente com URI:', retryUri);
         setCachedUri(retryUri); // Atualiza o estado para disparar a nova tentativa
         // Não retorna aqui, permite que setLoading(false) e setError(true) sejam definidos abaixo
         // A nova atualização de cachedUri acionará o useEffect e resetará loading/error.
