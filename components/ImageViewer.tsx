@@ -78,10 +78,8 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
   };
 
   const handleLoadStart = () => {
-    imageLoadTimer.current = Date.now(); // Guarda o tempo de início
-    setLoading(true);
-    setError(false);
-    loadAttempts.current = 0;
+    // Removido para evitar múltiplos ciclos de renderização no web. O estado loading já é
+    // controlado quando a URI muda (useEffect) e quando onLoad/onError são disparados.
   };
 
   const handleLoadSuccess = () => {
@@ -98,10 +96,10 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
 
   const handleLoadError = (errorEvent: any) => { // Adiciona parâmetro de erro
      const nativeEvent = errorEvent?.nativeEvent || {}; // Acessa nativeEvent se existir
-     if (imageLoadTimer.current) {
-       const loadTime = Date.now() - imageLoadTimer.current;
-       imageLoadTimer.current = null; // Limpa o timer
-     }
+    if (imageLoadTimer.current) {
+      const loadTime = Date.now() - imageLoadTimer.current;
+      imageLoadTimer.current = null; // Limpa o timer
+    }
     // Tenta novamente algumas vezes antes de desistir (máximo 3 tentativas)
     if (loadAttempts.current < 3) {
       loadAttempts.current += 1;
@@ -162,7 +160,6 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
             }
           ]}
           resizeMode="contain"
-          onLoadStart={handleLoadStart}
           onLoad={handleLoadSuccess}
           onError={handleLoadError}
           // Otimizações de desempenho - apenas propriedades compatíveis
