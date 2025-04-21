@@ -106,11 +106,13 @@ export function ensureFullImageUrl(imagePath: string): string {
     ? IMAGE_BASE_URL.slice(0, -1)
     : IMAGE_BASE_URL;
 
-  const path = imagePath.startsWith('/')
-    ? imagePath
-    : `/${imagePath}`;
+  // Remove barras iniciais e garanta o prefixo "static/images/"
+  const cleanPath = imagePath.replace(/^\/+/, '');
+  const pathWithPrefix = cleanPath.startsWith('static/images/')
+    ? cleanPath
+    : `static/images/${cleanPath}`;
 
-  return `${base}${path}`;
+  return `${base}/${pathWithPrefix}`;
 }
 
 // URL padrão para casos de fallback
