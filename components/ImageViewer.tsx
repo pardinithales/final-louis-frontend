@@ -22,7 +22,8 @@ type ImageViewerProps = {
 // Map global para cache de imagens entre componentes
 const imageCache = new Map<string, string>();
 
-export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
+// Define o componente funcional
+function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -200,6 +201,9 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
     </View>
   );
 }
+
+// Exporta a versão memoizada do componente
+export default React.memo(ImageViewerComponent);
 
 const styles = StyleSheet.create({
   container: {
