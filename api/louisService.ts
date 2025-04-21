@@ -10,10 +10,16 @@ const BASE_URL =
   typeof window !== 'undefined'
     // WEB: usa exatamente o mesmo host + protocolo do frontend
     ? `${window.location.origin}/api/v1`
-    // React Native / dev local: ainda aponta para porta 8000 em HTTP
+    // React Native / dev local: ainda aponta para porta 8000 em HTTP
     : 'http://louis.tpfbrain.com:8000/api/v1';
 
+// URL base para imagens - usa o mesmo protocolo/host que a API mas sem o caminho da API
+const IMAGE_BASE_URL = typeof window !== 'undefined'
+  ? window.location.origin // URL completa para web (mesma origem)
+  : 'http://louis.tpfbrain.com:8000'; // URL completa para native
 
+// Base URL da API
+// const BASE_URL = `${BASE_DOMAIN}${BASE_PATH}`;
 
 export type SyndromeType = {
   syndrome: string;
@@ -82,27 +88,55 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
   }
 };
 
-// Adiciona o domínio base a URLs relativas de imagens
+// Constrói URLs absolutas a partir de caminhos de imagem relativos
 export const ensureFullImageUrl = (imageUrl: string): string => {
-  if (!imageUrl) return '';
+  console.log('[ensureFullImageUrl] Entrada:', imageUrl);
+  
+  if (!imageUrl) {
+    console.log('[ensureFullImageUrl] URL vazia, retornando string vazia');
+    return '';
+  }
 
   // Se já é uma URL completa (http ou https), retorna como está
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    console.log('[ensureFullImageUrl] URL já completa, mantendo:', imageUrl);
     return imageUrl;
   }
-
-  // Se começa com /static/images/, mantém como está (já está correto para Nginx)
+  
+  // Formata a base da URL, removendo barra final se houver
+  const base = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+  
+  // Remove barras iniciais extras para evitar URLs mal formadas
+  const cleanPath = imageUrl.replace(/^\/+/, '');
+  
+  // Se já começa com /static/images/ ou static/images/
   if (imageUrl.startsWith('/static/images/')) {
-    return imageUrl;
+    // Remove a barra inicial para evitar duplicação
+    const fullUrl = `${base}${imageUrl}`;
+    console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
+    return fullUrl;
+  } else if (cleanPath.startsWith('static/images/')) {
+    // Já tem static/images/ mas sem barra inicial
+    const fullUrl = `${base}/${cleanPath}`;
+    console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
+    return fullUrl;
   }
 
-  // Para qualquer caminho relativo (ex: apenas nome), converte para caminho local
-  return `/static/images/${imageUrl.replace(/^\/?/, '')}`;
+  // Para qualquer outro caminho relativo, adiciona /static/images/
+  const fullUrl = `${base}/static/images/${cleanPath}`;
+  console.log('[ensureFullImageUrl] URL absoluta criada:', fullUrl);
+  return fullUrl;
 };
 
 // URL padrão para casos de fallback
 const getDefaultImageUrl = (): string => {
-  return ensureFullImageUrl('/static/images/default_brain.png');
+  console.log('[getDefaultImageUrl] Solicitando imagem padrão do cérebro');
+  // Importante: retorna uma URL absoluta, não um caminho relativo
+  const imagePath = '/static/images/default_brain.png';
+  const base = IMAGE_BASE_URL.endsWith('/') ? IMAGE_BASE_URL.slice(0, -1) : IMAGE_BASE_URL;
+  const fullUrl = `${base}${imagePath}`;
+  console.log('[getDefaultImageUrl] Retornando URL absoluta:', fullUrl);
+  return fullUrl;
 };
 
 /**
@@ -159,12 +193,18 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     
     // Verificar se a resposta contém image_url
     if (!data.image_url) {
-      console.warn('Backend não retornou image_url na resposta');
+      console.warn('[queryLouisAPI] Backend não retornou image_url na resposta');
     } else {
-      console.log('Image URL recebida (original):', data.image_url);
-      // Converte para URL completa
-      data.image_url = ensureFullImageUrl(data.image_url);
-      console.log('Image URL com domínio completo:', data.image_url);
+      console.log('[queryLouisAPI] Image URL recebida (original):', data.image_url);
+      // Verifica se a URL é válida antes de processar
+      if (typeof data.image_url !== 'string' || data.image_url.trim() === '') {
+        console.warn('[queryLouisAPI] Image URL inválida:', data.image_url);
+        data.image_url = '';
+      } else {
+        // Converte para URL completa
+        data.image_url = ensureFullImageUrl(data.image_url);
+        console.log('[queryLouisAPI] Image URL com domínio completo:', data.image_url);
+      }
     }
     
     // Parse the answer to extract syndromes and notes
@@ -176,23 +216,30 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     if (data.image_url) {
       // Se a API já forneceu uma URL, usamos diretamente (já convertida para URL completa)
       imageUrl = data.image_url;
-      console.log('Usando image_url da resposta:', imageUrl);
+      console.log('[queryLouisAPI] Usando image_url da resposta:', imageUrl);
     } else if (syndromes.length > 0) {
       // Se não tiver URL mas tiver síndrome, tentamos obter a imagem com base na localização da lesão
       try {
-        console.time('API Call: getImageForLesionSite'); // Medir tempo da função getImageForLesionSite
+        console.time('[queryLouisAPI] API Call: getImageForLesionSite');
         const imageUrlFromSyndrome = await getImageForLesionSite(syndromes[0].lesion_site);
-        console.timeEnd('API Call: getImageForLesionSite'); // Fim tempo da função getImageForLesionSite
-        imageUrl = imageUrlFromSyndrome || getDefaultImageUrl();
-        console.log('Obtida URL da imagem via getImageForLesionSite:', imageUrl);
+        console.timeEnd('[queryLouisAPI] API Call: getImageForLesionSite');
+        
+        if (imageUrlFromSyndrome) {
+          console.log('[queryLouisAPI] Imagem obtida via getImageForLesionSite (original):', imageUrlFromSyndrome);
+          imageUrl = ensureFullImageUrl(imageUrlFromSyndrome);
+          console.log('[queryLouisAPI] Imagem processada:', imageUrl);
+        } else {
+          console.warn('[queryLouisAPI] getImageForLesionSite retornou nulo/vazio');
+          imageUrl = getDefaultImageUrl();
+        }
       } catch (error) {
-        console.error('Erro ao obter imagem para síndrome:', error);
+        console.error('[queryLouisAPI] Erro ao obter imagem para síndrome:', error);
         imageUrl = getDefaultImageUrl();
       }
     } else {
       // Fallback para imagem padrão
       imageUrl = getDefaultImageUrl();
-      console.log('Usando imagem padrão:', imageUrl);
+      console.log('[queryLouisAPI] Usando imagem padrão:', imageUrl);
     }
     
     // Format the retrieved chunks

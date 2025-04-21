@@ -12,7 +12,6 @@ import {
 import Colors from '@/constants/Colors';
 import Layout from '@/constants/Layout';
 import { ZoomIn, ZoomOut } from 'lucide-react-native';
-import { ensureFullImageUrl } from '@/api/louisService';
 
 type ImageViewerProps = {
   imageUri: string;
@@ -35,32 +34,45 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
   
   // Otimização: verifica se a imagem já foi carregada antes
   const memoizedUri = useMemo(() => {
-    if (!imageUri) return '';
+    console.log('[ImageViewer] imageUri recebida:', imageUri);
     
-    // Sempre garantir URL completa da imagem
-    const fullUri = ensureFullImageUrl(imageUri);
+    if (!imageUri) {
+      console.log('[ImageViewer] imageUri vazia ou inválida');
+      return '';
+    }
+    
+    // A URL já vem processada do louisService, não fazemos outro processamento
+    // A URL já deve ser absoluta com domínio completo (http://... ou https://...)
+    console.log('[ImageViewer] Usando URL já processada:', imageUri);
     
     // Verifica se a imagem já está no cache global em memória (menos útil para web)
-    // if (imageCache.has(fullUri)) {
-    //   console.log('Usando imagem do cache global:', fullUri);
-    //   return imageCache.get(fullUri) || '';
+    // if (imageCache.has(imageUri)) {
+    //   console.log('Usando imagem do cache global:', imageUri);
+    //   return imageCache.get(imageUri) || '';
     // }
 
     // Deixa o navegador/plataforma gerenciar o cache HTTP padrão.
     // Não adiciona timestamp _t automaticamente.
-    // imageCache.set(fullUri, fullUri); // Cache em memória pode não ser necessário aqui
-    return fullUri;
+    // imageCache.set(imageUri, imageUri); // Cache em memória pode não ser necessário aqui
+    return imageUri;
   }, [imageUri]);
   
   // Atualiza a URI em cache apenas quando a memoizedUri realmente muda
   useEffect(() => {
+    console.log('[ImageViewer] useEffect - memoizedUri:', memoizedUri);
+    console.log('[ImageViewer] useEffect - cachedUri atual:', cachedUri);
+    
     // Verifica se a URI processada (memoizedUri) é diferente da URI atualmente no estado (cachedUri)
     // e se memoizedUri não está vazia.
     if (memoizedUri && memoizedUri !== cachedUri) {
+      console.log('[ImageViewer] Atualizando cachedUri para:', memoizedUri);
       setLoading(true); // Reinicia o loading para a nova imagem
       setError(false);
       setCachedUri(memoizedUri); // Atualiza o estado que vai para a <Image>
       loadAttempts.current = 0; // Reseta tentativas para a nova imagem
+      console.log('[ImageViewer] Estado atualizado: loading=true, error=false, tentativas=0');
+    } else {
+      console.log('[ImageViewer] URI não alterada ou vazia, mantendo estado atual');
     }
     // A dependência em cachedUri aqui garante que o efeito rode se cachedUri for alterado externamente,
     // mas a condição if previne loops se memoizedUri não mudou.
@@ -83,31 +95,41 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
   };
 
   const handleLoadSuccess = () => {
+    console.log('[ImageViewer] Imagem carregada com sucesso:', cachedUri || memoizedUri);
     setLoading(false);
     if (imageLoadTimer.current) {
       const loadTime = Date.now() - imageLoadTimer.current;
+      console.log(`[ImageViewer] Tempo de carregamento: ${loadTime}ms`);
       imageLoadTimer.current = null; // Limpa o timer
     }
     // Registra que a imagem foi carregada com sucesso
     if (imageUri) {
       imageCache.set(imageUri, cachedUri || memoizedUri);
+      console.log('[ImageViewer] Imagem adicionada ao cache com chave:', imageUri);
     }
   };
 
   const handleLoadError = (errorEvent: any) => { // Adiciona parâmetro de erro
-     const nativeEvent = errorEvent?.nativeEvent || {}; // Acessa nativeEvent se existir
+    const nativeEvent = errorEvent?.nativeEvent || {}; // Acessa nativeEvent se existir
+    console.log('[ImageViewer] Erro ao carregar imagem:', cachedUri || memoizedUri);
+    console.log('[ImageViewer] Detalhes do erro:', nativeEvent);
+    
     if (imageLoadTimer.current) {
       const loadTime = Date.now() - imageLoadTimer.current;
+      console.log(`[ImageViewer] Tempo até erro: ${loadTime}ms`);
       imageLoadTimer.current = null; // Limpa o timer
     }
+    
     // Tenta novamente algumas vezes antes de desistir (máximo 3 tentativas)
     if (loadAttempts.current < 3) {
       loadAttempts.current += 1;
+      console.log(`[ImageViewer] Tentativa ${loadAttempts.current}/3 para carregar a imagem`);
       
       // Força uma nova tentativa com um novo timestamp (APENAS no erro)
       if (Platform.OS === 'web' && memoizedUri) { // Usa memoizedUri como base
         // Gera uma URI única para tentar furar o cache APENAS na tentativa de erro
         const retryUri = `${memoizedUri}${memoizedUri.includes('?') ? '&' : '?'}retry=${Date.now()}`;
+        console.log('[ImageViewer] Nova tentativa com URI única:', retryUri);
         setCachedUri(retryUri); // Atualiza o estado para disparar a nova tentativa
         // Não retorna aqui, permite que setLoading(false) e setError(true) sejam definidos abaixo
         // A nova atualização de cachedUri acionará o useEffect e resetará loading/error.
@@ -116,10 +138,13 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
         setError(false); // Limpa o erro para a nova tentativa
         return; // Retorna para evitar setar error=true imediatamente
       }
+    } else {
+      console.log('[ImageViewer] Excedido número máximo de tentativas, desistindo');
     }
     
     setLoading(false);
     setError(true);
+    console.log('[ImageViewer] Estado final após erro: loading=false, error=true');
   };
 
   return (
@@ -160,6 +185,10 @@ function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
             }
           ]}
           resizeMode="contain"
+          onLoadStart={() => {
+            console.log('[ImageViewer] Iniciando carregamento da imagem:', cachedUri || memoizedUri);
+            imageLoadTimer.current = Date.now(); // Inicia timer
+          }}
           onLoad={handleLoadSuccess}
           onError={handleLoadError}
           // Otimizações de desempenho - apenas propriedades compatíveis
