@@ -1,10 +1,15 @@
 import { Platform } from 'react-native';
 
 // Base URL for the API - use environment variable if available
-// Use protocolo relativo (//) para respeitar HTTP ou HTTPS da página atual e evitar Mixed Content
+// Seleciona a URL base considerando HTTPS em produção (sem porta 8000) e HTTP com porta em desenvolvimento/native
+const BASE_DOMAIN = 'louis.tpfbrain.com';
+const BASE_PATH = '/api/v1';
+
 const BASE_URL = Platform.OS === 'web'
-  ? `${window.location.protocol}//louis.tpfbrain.com:8000/api/v1`
-  : 'http://louis.tpfbrain.com:8000/api/v1';
+  // Usa o mesmo protocolo da página (http: ou https:) e **SEM** porta, pois 8000 não está exposto em HTTPS
+  ? `${window.location.protocol}//${BASE_DOMAIN}${BASE_PATH}`
+  // Em ambiente nativo ou desenvolvimento ainda podemos apontar para a porta 8000 via HTTP
+  : `http://${BASE_DOMAIN}:8000${BASE_PATH}`;
 
 export type SyndromeType = {
   syndrome: string;
