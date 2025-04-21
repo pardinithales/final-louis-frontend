@@ -24,6 +24,7 @@ const imageCache = new Map<string, string>();
 
 // Define o componente funcional
 function ImageViewerComponent({ imageUri, title }: ImageViewerProps) {
+  console.log('[ImageViewer] Renderizando com imageUri:', imageUri);
   const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
