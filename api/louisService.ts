@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 // Base URL for the API - use environment variable if available
 const BASE_URL = Platform.select({
   web: 'http://louis.tpfbrain.com:8000/api/v1', // Conexão direta para web
-  default: 'http://louis.tpfbrain.com:8000/api/v1' // Conexão direta para native
+  default: 'http://louis.tpfbrain.com:8000/api/v1' // Manter conexão direta para native
 });
 
 export type SyndromeType = {
@@ -100,6 +100,7 @@ const getDefaultImageUrl = (): string => {
  * Send a query to the LouiS API
  */
 export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResponseType | null> => {
+  const queryStartTime = Date.now(); // Início Tempo Total
   try {
     console.log('Sending query to API:', query);
     
@@ -107,6 +108,7 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
+    console.time('API Call: /query/'); // Medir tempo do fetch /query/
     const response = await fetch(`${BASE_URL}/query`, {
       method: 'POST',
       headers: {
@@ -119,6 +121,7 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
       }),
       signal: controller.signal,
     });
+    console.timeEnd('API Call: /query/'); // Fim tempo do fetch /query/
 
     clearTimeout(timeoutId);
 
@@ -168,7 +171,9 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     } else if (syndromes.length > 0) {
       // Se não tiver URL mas tiver síndrome, tentamos obter a imagem com base na localização da lesão
       try {
+        console.time('API Call: getImageForLesionSite'); // Medir tempo da função getImageForLesionSite
         const imageUrlFromSyndrome = await getImageForLesionSite(syndromes[0].lesion_site);
+        console.timeEnd('API Call: getImageForLesionSite'); // Fim tempo da função getImageForLesionSite
         imageUrl = imageUrlFromSyndrome || getDefaultImageUrl();
         console.log('Obtida URL da imagem via getImageForLesionSite:', imageUrl);
       } catch (error) {
@@ -205,6 +210,9 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
       retrievedChunks: result.retrievedChunks.length
     }, null, 2));
     
+    const queryEndTime = Date.now(); // Fim Tempo Total
+    console.log(`Tempo total queryLouisAPI: ${queryEndTime - queryStartTime}ms`); // Log tempo total
+
     console.log('Parsed result:', result);
     return result;
   } catch (error) {
@@ -221,6 +229,8 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
       throw error;
     }
     console.error('Unknown error:', error);
+    const queryEndTime = Date.now(); // Fim Tempo Total (em caso de erro)
+    console.log(`Tempo total queryLouisAPI (com erro): ${queryEndTime - queryStartTime}ms`); // Log tempo total
     throw new Error('Ocorreu um erro inesperado. Por favor, tente novamente.');
   }
 };
@@ -233,6 +243,7 @@ export const getImageForLesionSite = async (lesionSite: string): Promise<string 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos de timeout
 
+    console.time('API Call: /image/select'); // Medir tempo do fetch /image/select
     const response = await fetch(`${BASE_URL}/image/select`, {
       method: 'POST',
       headers: {
@@ -244,6 +255,7 @@ export const getImageForLesionSite = async (lesionSite: string): Promise<string 
       }),
       signal: controller.signal,
     });
+    console.timeEnd('API Call: /image/select'); // Fim tempo do fetch /image/select
 
     clearTimeout(timeoutId);
 

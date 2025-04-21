@@ -30,6 +30,7 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
   // Usamos any para compatibilidade com diferentes plataformas
   const imageRef = useRef<any>(null);
   const loadAttempts = useRef(0);
+  const imageLoadTimer = useRef<number | null>(null); // Ref para guardar o tempo
   
   // Otimização: verifica se a imagem já foi carregada antes
   const memoizedUri = useMemo(() => {
@@ -78,6 +79,8 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
   };
 
   const handleLoadStart = () => {
+    console.log('[ImageViewer] Load Start:', cachedUri || memoizedUri);
+    imageLoadTimer.current = Date.now(); // Guarda o tempo de início
     setLoading(true);
     setError(false);
     loadAttempts.current = 0;
@@ -85,13 +88,27 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
 
   const handleLoadSuccess = () => {
     setLoading(false);
+    if (imageLoadTimer.current) {
+      const loadTime = Date.now() - imageLoadTimer.current;
+      console.log(`[ImageViewer] Load Success: ${loadTime}ms`, cachedUri || memoizedUri); // Loga o tempo
+      imageLoadTimer.current = null; // Limpa o timer
+    } else {
+       console.log(`[ImageViewer] Load Success (sem timer):`, cachedUri || memoizedUri);
+    }
     // Registra que a imagem foi carregada com sucesso
     if (imageUri) {
       imageCache.set(imageUri, cachedUri || memoizedUri);
     }
   };
 
-  const handleLoadError = () => {
+  const handleLoadError = (errorEvent: any) => { // Adiciona parâmetro de erro
+     const nativeEvent = errorEvent?.nativeEvent || {}; // Acessa nativeEvent se existir
+     console.error('[ImageViewer] Load Error:', nativeEvent.error || 'Erro desconhecido', cachedUri || memoizedUri);
+     if (imageLoadTimer.current) {
+       const loadTime = Date.now() - imageLoadTimer.current;
+       console.log(`[ImageViewer] Tempo até erro: ${loadTime}ms`); // Loga o tempo até o erro
+       imageLoadTimer.current = null; // Limpa o timer
+     }
     // Tenta novamente algumas vezes antes de desistir (máximo 3 tentativas)
     if (loadAttempts.current < 3) {
       loadAttempts.current += 1;
