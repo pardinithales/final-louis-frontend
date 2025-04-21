@@ -118,7 +118,7 @@ export const queryLouisAPI = async (query: string, topK = 3): Promise<ParsedResp
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     console.time('API Call: /query/'); // Medir tempo do fetch /query/
-    const response = await fetch(`${BASE_URL}/query`, {
+    const response = await fetch(`${BASE_URL}/query/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ export const getImageForLesionSite = async (lesionSite: string): Promise<string 
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos de timeout
 
     console.time('API Call: /image/select'); // Medir tempo do fetch /image/select
-    const response = await fetch(`${BASE_URL}/image/select`, {
+    const response = await fetch(`${BASE_URL}/image/select/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
