@@ -12,6 +12,7 @@ import {
 import Colors from '@/constants/Colors';
 import Layout from '@/constants/Layout';
 import { ZoomIn, ZoomOut } from 'lucide-react-native';
+import { ensureFullImageUrl } from '@/api/louisService';
 
 type ImageViewerProps = {
   imageUri: string;
@@ -34,23 +35,26 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
   const memoizedUri = useMemo(() => {
     if (!imageUri) return '';
     
+    // Sempre garantir URL completa da imagem
+    const fullUri = ensureFullImageUrl(imageUri);
+    
     // Verifica se a imagem já está no cache global
-    if (imageCache.has(imageUri)) {
-      console.log('Usando imagem do cache global:', imageUri);
-      return imageCache.get(imageUri) || '';
+    if (imageCache.has(fullUri)) {
+      console.log('Usando imagem do cache global:', fullUri);
+      return imageCache.get(fullUri) || '';
     }
     
     // Para ambiente web com problemas de cache
     if (Platform.OS === 'web') {
       // Usa um timestamp apenas se for a primeira vez carregando esta imagem
-      const cachedUri = `${imageUri}${imageUri.includes('?') ? '&' : '?'}_t=${Date.now()}`;
-      imageCache.set(imageUri, cachedUri);
+      const cachedUri = `${fullUri}${fullUri.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+      imageCache.set(fullUri, cachedUri);
       return cachedUri;
     }
     
     // Em dispositivos nativos ou quando já temos a imagem em cache
-    imageCache.set(imageUri, imageUri);
-    return imageUri;
+    imageCache.set(fullUri, fullUri);
+    return fullUri;
   }, [imageUri]);
   
   // Atualiza a URI em cache apenas quando a memoizedUri muda

@@ -74,7 +74,7 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
 };
 
 // Adiciona o domínio base a URLs relativas de imagens
-const ensureFullImageUrl = (imageUrl: string): string => {
+export const ensureFullImageUrl = (imageUrl: string): string => {
   // Se já é uma URL completa (começa com http:// ou https://), retorna como está
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
     return imageUrl;
