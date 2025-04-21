@@ -39,32 +39,31 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
     // Sempre garantir URL completa da imagem
     const fullUri = ensureFullImageUrl(imageUri);
     
-    // Verifica se a imagem já está no cache global
-    if (imageCache.has(fullUri)) {
-      console.log('Usando imagem do cache global:', fullUri);
-      return imageCache.get(fullUri) || '';
-    }
-    
-    // Para ambiente web com problemas de cache
-    if (Platform.OS === 'web') {
-      // Usa um timestamp apenas se for a primeira vez carregando esta imagem
-      const cachedUri = `${fullUri}${fullUri.includes('?') ? '&' : '?'}_t=${Date.now()}`;
-      imageCache.set(fullUri, cachedUri);
-      return cachedUri;
-    }
-    
-    // Em dispositivos nativos ou quando já temos a imagem em cache
-    imageCache.set(fullUri, fullUri);
+    // Verifica se a imagem já está no cache global em memória (menos útil para web)
+    // if (imageCache.has(fullUri)) {
+    //   console.log('Usando imagem do cache global:', fullUri);
+    //   return imageCache.get(fullUri) || '';
+    // }
+
+    // Deixa o navegador/plataforma gerenciar o cache HTTP padrão.
+    // Não adiciona timestamp _t automaticamente.
+    // imageCache.set(fullUri, fullUri); // Cache em memória pode não ser necessário aqui
     return fullUri;
   }, [imageUri]);
   
-  // Atualiza a URI em cache apenas quando a memoizedUri muda
+  // Atualiza a URI em cache apenas quando a memoizedUri realmente muda
   useEffect(() => {
+    // Verifica se a URI processada (memoizedUri) é diferente da URI atualmente no estado (cachedUri)
+    // e se memoizedUri não está vazia.
     if (memoizedUri && memoizedUri !== cachedUri) {
-      setLoading(true);
+      console.log('[ImageViewer] Nova memoizedUri, atualizando cachedUri:', memoizedUri);
+      setLoading(true); // Reinicia o loading para a nova imagem
       setError(false);
-      setCachedUri(memoizedUri);
+      setCachedUri(memoizedUri); // Atualiza o estado que vai para a <Image>
+      loadAttempts.current = 0; // Reseta tentativas para a nova imagem
     }
+    // A dependência em cachedUri aqui garante que o efeito rode se cachedUri for alterado externamente,
+    // mas a condição if previne loops se memoizedUri não mudou.
   }, [memoizedUri, cachedUri]);
   
   const windowWidth = Dimensions.get('window').width;
@@ -114,11 +113,18 @@ export default function ImageViewer({ imageUri, title }: ImageViewerProps) {
       loadAttempts.current += 1;
       console.log(`Tentativa ${loadAttempts.current} de carregar a imagem: ${imageUri}`);
       
-      // Força uma nova tentativa com um novo timestamp
-      if (Platform.OS === 'web' && imageUri) {
-        const newUri = `${imageUri}${imageUri.includes('?') ? '&' : '?'}_retry=${Date.now()}`;
-        setCachedUri(newUri);
-        return;
+      // Força uma nova tentativa com um novo timestamp (APENAS no erro)
+      if (Platform.OS === 'web' && memoizedUri) { // Usa memoizedUri como base
+        // Gera uma URI única para tentar furar o cache APENAS na tentativa de erro
+        const retryUri = `${memoizedUri}${memoizedUri.includes('?') ? '&' : '?'}retry=${Date.now()}`;
+        console.log('[ImageViewer] Tentando novamente com URI:', retryUri);
+        setCachedUri(retryUri); // Atualiza o estado para disparar a nova tentativa
+        // Não retorna aqui, permite que setLoading(false) e setError(true) sejam definidos abaixo
+        // A nova atualização de cachedUri acionará o useEffect e resetará loading/error.
+        // No entanto, precisamos garantir que loading seja true para a tentativa.
+        setLoading(true); // Garante que o loading seja exibido durante a nova tentativa
+        setError(false); // Limpa o erro para a nova tentativa
+        return; // Retorna para evitar setar error=true imediatamente
       }
     }
     
