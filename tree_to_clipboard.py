@@ -16,19 +16,23 @@ def main():
 
     # Percorre recursivamente
     for path in root_dir.rglob('*'):
+        # Ignora qualquer arquivo dentro de node_modules
+        if 'node_modules' in path.parts:
+            continue
+        # Ignora package-lock.json
+        if path.name == 'package-lock.json':
+            continue
         if path.is_file() and path.suffix in include_extensions:
-            # Checa se algum diretório pai está na lista de exclusão
+            # Checa se algum diretório pai está na lista de exclusão (exceto node_modules, já tratado acima)
             is_excluded = False
             for part in path.relative_to(root_dir).parts:
-                if part in exclude_dirs:
+                if part in exclude_dirs and part != 'node_modules':
                     is_excluded = True
                     break
-            
             # Checa especificamente por 'static/images'
             relative_path_str = str(path.relative_to(root_dir)).replace('\\', '/')
             if 'static/images' in relative_path_str:
                 is_excluded = True
-
             if not is_excluded:
                 # Adiciona o path relativo (formato Unix-like para consistência)
                 relative_path = path.relative_to(root_dir).as_posix()
