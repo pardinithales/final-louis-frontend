@@ -25,9 +25,6 @@ FROM nginx:stable-alpine
 # Copia a configuração personalizada do Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Remove a configuração padrão do Nginx (se existir)
-RUN rm /etc/nginx/nginx.conf
-
 # Copia os arquivos estáticos construídos do estágio anterior
 # Expo exporta para 'dist' por padrão. Verifique se é o caso.
 COPY --from=builder /app/dist /usr/share/nginx/html
