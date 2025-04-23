@@ -94,19 +94,11 @@ export default function AboutScreen() {
               <Text style={styles.linkText}>pardinithales@gmail.com</Text>
               <ExternalLink size={16} color={Colors.primary} />
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.linkButton}
-              onPress={() => openLink('https://universidadefederaldabahia.edu.br')}
-            >
-              <Text style={styles.linkText}>Universidade Federal da Bahia</Text>
-              <ExternalLink size={16} color={Colors.primary} />
-            </TouchableOpacity>
           </View>
           
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              © 2024 Universidade Federal da Bahia - Todos os direitos reservados
+              © 2024 LouiS Stroke Project - Todos os direitos reservados
             </Text>
             <Text style={styles.versionText}>
               LouiS Stroke v1.0.0

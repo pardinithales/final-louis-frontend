@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { ChevronUp, ChevronDown } from 'lucide-react-native';
 import { ParsedResponseType } from '@/api/louisService';
 import Colors from '@/constants/Colors';
 import Layout from '@/constants/Layout';
@@ -12,6 +13,7 @@ type AnalysisResultProps = {
 
 export default function AnalysisResult({ result }: AnalysisResultProps) {
   const [selectedSyndromeIndex, setSelectedSyndromeIndex] = useState(0);
+  const [isReferencesExpanded, setIsReferencesExpanded] = useState(true);
   
   if (!result || !result.syndromes || result.syndromes.length === 0) {
     return (
@@ -47,15 +49,15 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
         </ScrollView>
       </View>
       
-      {result.imageUrl && (
+      {selectedSyndromeIndex === 0 && result.imageUrl && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Imagem de Ressonância</Text>
           <Text style={styles.locationText}>
-            Localização: <Text style={styles.locationHighlight}>{selectedSyndrome?.lesion_site}</Text>
+            Localização: <Text style={styles.locationHighlight}>{result.syndromes[0]?.lesion_site}</Text>
           </Text>
           <ImageViewer 
             imageUri={result.imageUrl} 
-            title={`Imagem ilustrativa de lesão em ${selectedSyndrome?.lesion_site}`}
+            title={`Imagem ilustrativa de lesão em ${result.syndromes[0]?.lesion_site}`}
           />
         </View>
       )}
@@ -76,22 +78,27 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
       
       {result.retrievedChunks && result.retrievedChunks.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Referências</Text>
-          <View style={styles.referencesList}>
-            {result.retrievedChunks.map((chunk, index) => (
-              <View key={index} style={styles.referenceItem}>
-                <Text style={styles.referenceScore}>
-                  {Math.round(chunk.score * 100)}% relevância
-                </Text>
-                <Text style={styles.referenceText} numberOfLines={3}>
-                  {chunk.text}
-                </Text>
-                <Text style={styles.referenceSource}>
-                  Fonte: {chunk.source}
-                </Text>
-              </View>
-            ))}
-          </View>
+          <TouchableOpacity onPress={() => setIsReferencesExpanded(!isReferencesExpanded)} style={styles.collapsibleHeader}>
+            <Text style={styles.sectionTitle}>Referências</Text>
+            {isReferencesExpanded ? <ChevronUp size={20} color={Colors.primary} /> : <ChevronDown size={20} color={Colors.primary} />}
+          </TouchableOpacity>
+          {isReferencesExpanded && (
+            <View style={styles.referencesList}>
+              {result.retrievedChunks.map((chunk, index) => (
+                <View key={index} style={styles.referenceItem}>
+                  <Text style={styles.referenceScore}>
+                    {Math.round(chunk.score * 100)}% relevância
+                  </Text>
+                  <Text style={styles.referenceText} numberOfLines={3}>
+                    {chunk.text}
+                  </Text>
+                  <Text style={styles.referenceSource}>
+                    Fonte: {chunk.source}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -199,5 +206,11 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Layout.spacing.xl,
+  },
+  collapsibleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Layout.spacing.s,
   },
 });

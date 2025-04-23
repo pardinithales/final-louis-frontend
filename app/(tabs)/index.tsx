@@ -25,9 +25,9 @@ export default function HomeScreen() {
         <View style={styles.heroContainer}>
           <View style={styles.heroContent}>
             <BrainCircuit size={60} color={Colors.primary} style={styles.heroIcon} />
-            <Text style={styles.heroTitle}>Bem-vindo ao LouiS</Text>
+            <Text style={styles.heroTitle}>LouiS</Text>
             <Text style={styles.heroSubtitle}>
-              Especialista em Localização Neurológica de AVC
+              Sistema de Apoio à Localização Neurológica de AVC
             </Text>
             
             <TouchableOpacity 
@@ -105,8 +105,8 @@ const styles = StyleSheet.create({
     marginBottom: Layout.spacing.m,
   },
   heroTitle: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 28,
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 26,
     color: Colors.primary,
     textAlign: 'center',
     marginBottom: Layout.spacing.s,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontFamily: 'Poppins-Regular',
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: Colors.text,
     textAlign: 'center',
     marginBottom: Layout.spacing.xl,
   },
