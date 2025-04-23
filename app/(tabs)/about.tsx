@@ -62,16 +62,26 @@ export default function AboutScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Como Utilizar</Text>
             <Text style={styles.paragraph}>
-              1. Na tela de consulta, descreva os sinais e sintomas neurológicos do paciente da forma mais detalhada possível.
+              1. Descreva os sintomas neurológicos do paciente
             </Text>
             <Text style={styles.paragraph}>
-              2. O sistema analisará os dados fornecidos e identificará possíveis síndromes vasculares correspondentes.
+              2. Obtenha análise de possíveis localizações de AVC
             </Text>
             <Text style={styles.paragraph}>
-              3. Visualize as imagens de ressonância magnética relacionadas à localização identificada.
+              3. Visualize imagens de ressonância magnética relevantes
             </Text>
             <Text style={styles.paragraph}>
-              4. Consulte as observações clínicas e referências que embasam a análise.
+              4. Acesse referências e justificativas detalhadas
+            </Text>
+          </View>
+          
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Desenvolvimento e Orientação</Text>
+            <Text style={styles.paragraph}>
+              Desenvolvido por Thales Pardini Fagundes, médico neurologista formado pelo Hospital das Clínicas de Riberão Preto (HCFMRP-USP).
+            </Text>
+            <Text style={styles.paragraph}>
+              O projeto é orientado por Millene Rodrigues Camilo em parceria com o João Brainer Clares de Andrade (UNIFESP).
             </Text>
           </View>
           
@@ -79,9 +89,9 @@ export default function AboutScreen() {
             <Text style={styles.sectionTitle}>Contato e Suporte</Text>
             <TouchableOpacity 
               style={styles.linkButton}
-              onPress={() => openLink('mailto:support@louis-stroke.com')}
+              onPress={() => openLink('mailto:pardinithales@gmail.com')}
             >
-              <Text style={styles.linkText}>support@louis-stroke.com</Text>
+              <Text style={styles.linkText}>pardinithales@gmail.com</Text>
               <ExternalLink size={16} color={Colors.primary} />
             </TouchableOpacity>
             
