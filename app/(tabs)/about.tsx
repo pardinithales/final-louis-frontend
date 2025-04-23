@@ -62,7 +62,7 @@ export default function AboutScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Como Utilizar</Text>
             <Text style={styles.paragraph}>
-              1. Descreva os sintomas neurológicos do paciente
+              1. Descreva os sinais e sintomas neurológicos do paciente
             </Text>
             <Text style={styles.paragraph}>
               2. Obtenha análise de possíveis localizações de AVC

@@ -43,7 +43,7 @@ export default function HomeScreen() {
             <View style={styles.infoCard}>
               <Text style={styles.infoTitle}>Como utilizar o LouiS?</Text>
               <Text style={styles.infoText}>
-                1. Descreva os sintomas neurológicos do paciente
+                1. Descreva os sinais e sintomas neurológicos do paciente
               </Text>
               <Text style={styles.infoText}>
                 2. Obtenha análise de possíveis localizações de AVC

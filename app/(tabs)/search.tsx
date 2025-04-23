@@ -37,7 +37,7 @@ export default function SearchScreen() {
   
   return (
     <View style={styles.container}>
-      <LouisHeader title="Consulta" subtitle="Descreva os sintomas neurológicos" />
+      <LouisHeader title="Consulta" subtitle="Descreva os sinais e sintomas neurológicos" />
       
       <ScreenContainer>
         <View style={styles.searchContainer}>

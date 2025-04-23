@@ -74,16 +74,17 @@ const parseAnswer = (answer: string): { syndromes: SyndromeType[], notes: string
     const syndromes: SyndromeType[] = JSON.parse(syndromeMatch[1].trim());
     
     // Extract notes section
-    const notesMatch = answer.match(/Notas:\s*((?:#\d+:[^#]*)+)(?=\[|$)/);
+    // Regex ajustada para capturar todo texto após "Notas: "
+    const notesMatch = answer.match(/Notas:\s*(.*)/s);
     if (!notesMatch || !notesMatch[1]) {
+      console.log('No notes found after "Notas:" marker in answer:', answer); // Mensagem de log atualizada
       return { syndromes, notes: [] };
     }
     
-    // Split notes by #number: pattern and clean them up
-    const notes = notesMatch[1]
-      .split(/#\d+:\s*/)
-      .filter(note => note.trim().length > 0)
-      .map(note => note.trim());
+    // Pega o texto capturado e o trata como uma nota única
+    const notesText = notesMatch[1].trim();
+    // Cria um array com a nota única se o texto não estiver vazio
+    const notes = notesText.length > 0 ? [notesText] : [];
     
     return { syndromes, notes };
   } catch (error) {
