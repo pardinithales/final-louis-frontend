@@ -68,7 +68,6 @@ export default function AnalysisResult({ result }: AnalysisResultProps) {
           <View style={styles.notesList}>
             {result.notes.map((note, index) => (
               <View key={index} style={styles.noteItem}>
-                <Text style={styles.noteNumber}>{index + 1}</Text>
                 <Text style={styles.noteText}>{note}</Text>
               </View>
             ))}
@@ -150,23 +149,13 @@ const styles = StyleSheet.create({
     marginTop: Layout.spacing.s,
   },
   noteItem: {
-    flexDirection: 'row',
     marginBottom: Layout.spacing.m,
-    paddingLeft: Layout.spacing.s,
-  },
-  noteNumber: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 16,
-    color: Colors.primary,
-    width: 24,
-    textAlign: 'center',
   },
   noteText: {
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
     color: Colors.text,
-    flex: 1,
-    marginLeft: Layout.spacing.m,
+    lineHeight: 22,
   },
   referencesList: {
     marginTop: Layout.spacing.s,
